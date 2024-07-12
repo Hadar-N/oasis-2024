@@ -7,11 +7,12 @@ from random import randint
 import math
 
 class ContourPolygon(pygame.sprite.Sprite):
-    def __init__(self, contour, resize_proportion):
+    def __init__(self, contour, resize_proportion, i= 0):
         super().__init__()
         self.resize_proportion = resize_proportion
         self.color = [getRandomColor(), getRandomColor(), getRandomColor()]
-        self.setShape(contour)
+        # self.i = i
+        self.setShape(contour, i)
         self.internal_sprites = pygame.sprite.Group()
 
         sp = self.newInternalSprite()
@@ -22,8 +23,8 @@ class ContourPolygon(pygame.sprite.Sprite):
         w,h = consts.FISH_SIZE
         return self.rect.height > h and self.rect.width > w
 
-    def updateShape(self, contour):
-        self.setShape(contour)
+    def updateShape(self, contour, i = 0):
+        self.setShape(contour, i)
         return self
     
     def newInternalSprite(self):
@@ -39,7 +40,7 @@ class ContourPolygon(pygame.sprite.Sprite):
 
         return sprite
 
-    def setShape(self, contour): 
+    def setShape(self, contour, i): 
         # bounding = cv2.boundingRect(contour)
         bounding = list(map(lambda x: int(x * self.resize_proportion), cv2.boundingRect(contour)))
         # print(cv2.boundingRect(contour) ,  bounding)
@@ -54,11 +55,22 @@ class ContourPolygon(pygame.sprite.Sprite):
         pygame.mask.Mask.invert(self.inv_mask)
 
         self.contour = contour
-        self.area = cv2.contourArea(contour)
+        self.area = self.mask.count()
+        # self.area = cv2.contourArea(contour)
+        # print("area comparison: ",self.area,self.mask.count())
         self.rect.x = x
         self.rect.y = y
         self.rect.height = bounding[consts.BOUND_LEGEND["HEIGHT"]]
         self.rect.width = bounding[consts.BOUND_LEGEND["WIDTH"]]
+
+        self.font = pygame.font.SysFont("Arial", 15)
+        self.textSurf = self.font.render(str(i), 1, (255,0,0))
+        # self.image = pygame.Surface((width, height))
+        W = self.textSurf.get_width()
+        H = self.textSurf.get_height()
+        # self.image.blit(self.textSurf, [self.rect.width/2 - W/2, self.rect.height/2 - H/2])
+        self.image.blit(self.textSurf, [0, 0])
+
 
     def randomizeInternalLocation(self, sprite):
         def random_location():
